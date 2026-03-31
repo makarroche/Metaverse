@@ -2,13 +2,14 @@
 
 import axios from "axios"
 import { BASE_URL } from "../utils/constants"
+import { AstralType, AstralDirection, AstralColor } from "../types/mutationType"
 
 export const handleMutateAstral = async (
   mutationType: string,
   coordinates: { row: number; column: number },
-  astralType: "polyanets" | "soloons" | "comeths",
-  direction?: "up" | "right" | "down" | "left",
-  color?: "red" | "blue" | "purple" | "white"
+  astralType: AstralType,
+  astralDirection?: AstralDirection,
+  astralColor?: AstralColor
 ) => {
   const { row, column } = coordinates
 
@@ -20,8 +21,8 @@ export const handleMutateAstral = async (
         row,
         column,
         candidateId: process.env.CANDIDATE_ID,
-        ...(direction && { direction }),
-        ...(color && { color }),
+        ...(astralDirection && { direction: astralDirection }),
+        ...(astralColor && { color: astralColor }),
       },
     })
     return data
