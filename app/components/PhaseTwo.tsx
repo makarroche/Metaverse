@@ -1,107 +1,26 @@
 "use client"
 
-import { useState } from "react"
-import { parseGoalMap } from "../utils/helpers"
 import { Button } from "@/components/ui/button"
-import { useMutateAstral } from "@/app/hooks/useMutatePolyanets"
+import { useCreateMorePolyanetsUI } from "@/app/hooks/useCreateMorePolyanetsUI"
+import { useCreateMorePolyanetsAPI } from "../hooks/useCreateMorePolyanetsAPI"
 
 const PhaseTwo = () => {
-  const { isPending, error, createAstral } = useMutateAstral("POST")
-  const [grid, setGrid] = useState<React.ReactNode[][]>(() =>
-    Array.from({ length: 30 }, () => Array(30).fill("🌌"))
-  )
-
-  const { polyanets, comeths, soloons } = parseGoalMap()
-
-  // Create Polyanets, Comeths and Soloons with UI to understand logic first
-  const createPolyanetsUI = () => {
-    const newGrid = grid.map((row, i) =>
-      row.map((cell, j) => {
-        if (polyanets.some((p) => p.row === i && p.column === j)) {
-          return "🪐"
-        }
-        if (comeths.some((c) => c.row === i && c.column === j)) {
-          const cometh = comeths.find((c) => c.row === i && c.column === j)
-          const rotation =
-            cometh?.direction === "up"
-              ? "50deg"
-              : cometh?.direction === "right"
-                ? "130deg"
-                : cometh?.direction === "down"
-                  ? "240deg"
-                  : cometh?.direction === "left"
-                    ? "340deg"
-                    : "0deg"
-
-          return (
-            <span
-              style={{
-                transform: `rotate(${rotation})`,
-                display: "inline-block",
-              }}
-            >
-              ☄️
-            </span>
-          )
-        }
-        if (soloons.some((s) => s.row === i && s.column === j)) {
-          const soolon = soloons.find((s) => s.row === i && s.column === j)
-          if (soolon?.color === "red") return "🔴"
-          if (soolon?.color === "blue") return "🔵"
-          if (soolon?.color === "green") return "🟢"
-          if (soolon?.color === "purple") return "🟣"
-          if (soolon?.color === "white") return "⚪"
-        }
-        return cell
-      })
-    )
-    setGrid(newGrid)
-  }
-
-  // Create Polyanets with API
-  const createPolyanetsComethsSoloonsAPI = async () => {
-    const delay = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms))
-
-    // polyanets
-    for (const coord of polyanets) {
-      await createAstral({
-        type: "post",
-        coordinates: coord,
-        astralType: "polyanets",
-      })
-      await delay(500)
-    }
-
-    // comeths
-    for (const coord of comeths) {
-      await createAstral({
-        type: "post",
-        coordinates: coord,
-        astralType: "comeths",
-        direction: coord.direction,
-      })
-      await delay(500)
-    }
-
-    // soloons
-    for (const coord of soloons) {
-      await createAstral({
-        type: "post",
-        coordinates: coord,
-        astralType: "soloons",
-        color: coord.color,
-      })
-      await delay(500)
-    }
-  }
+  const { grid, createPolyanetsUI } = useCreateMorePolyanetsUI()
+  const { createPolyanetsComethsSoloonsAPI, isPending, error } =
+    useCreateMorePolyanetsAPI()
 
   return (
-    <div>
-      PhaseTwo
-      <p> Create Polyanets, Comeths and Soloons (UI)</p>
-      <p className="mt-2 text-sm text-gray-500">For testing purposes</p>
-      <Button className="mt-2 cursor-pointer" onClick={createPolyanetsUI}>
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-bold">Phase Two</h1>
+      <p className="font-semibold">
+        Create Polyanets, Comeths and Soloons (UI){" "}
+        <span className="text-sm text-gray-500">- For testing purposes</span>
+      </p>
+      <Button
+        variant="secondary"
+        className="mt-2 cursor-pointer"
+        onClick={createPolyanetsUI}
+      >
         Create
       </Button>
       <div className="grid grid-cols-30 gap-1">
@@ -111,13 +30,20 @@ const PhaseTwo = () => {
           </div>
         ))}
       </div>
-      <p> Create Polyanets, Comeths and Soloons (API)</p>
+      <p className="font-semibold">
+        {" "}
+        Create Polyanets, Comeths and Soloons (API){" "}
+        <span className="text-sm text-green-500"> - For persistence</span>
+      </p>
       <Button
+        variant="secondary"
         className="mt-2 cursor-pointer"
         onClick={createPolyanetsComethsSoloonsAPI}
       >
         Create
       </Button>
+      {isPending && <p>Loading...</p>}
+      {error && <p>Error: {error.message}</p>}
     </div>
   )
 }

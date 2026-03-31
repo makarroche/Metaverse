@@ -1,56 +1,26 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { useMutateAstral } from "@/app/hooks/useMutatePolyanets"
+import { useCreatePolyanetsUI } from "@/app/hooks/useCreatePolyanetsUI"
+import { useCreatePolyanetsAPI } from "@/app/hooks/useCreatePolyanetsAPI"
 
 const PhaseOne = () => {
-  const { isPending, error, createAstral } = useMutateAstral("POST")
-  const [grid, setGrid] = useState<string[][]>(() =>
-    Array.from({ length: 11 }, () => Array(11).fill("🌌"))
-  )
-
-  const isMainDiagonal = (i: number, j: number) =>
-    i === j && i > 1 && j > 1 && i < 9 && j < 9
-
-  const isOtherDiagonal = (i: number, j: number) =>
-    i + j === 10 && i > 1 && j > 1 && i < 9 && j < 9
-
-  // Create Polyanets with UI to understand logic first
-  const createPolyanetsUI = () => {
-    const newGrid = grid.map((row, i) =>
-      row.map((cell, j) =>
-        isMainDiagonal(i, j) || isOtherDiagonal(i, j) ? "🪐" : cell
-      )
-    )
-    setGrid(newGrid)
-  }
-
-  // Create Polyanets with API
-  const createPolyanetsAPI = async () => {
-    const coordinates = []
-    for (let i = 2; i <= 8; i++) {
-      coordinates.push({ row: i, column: i })
-      coordinates.push({ row: i, column: 10 - i })
-    }
-
-    await Promise.all(
-      coordinates.map((coord) =>
-        createAstral({
-          type: "post",
-          coordinates: coord,
-          astralType: "polyanets",
-        })
-      )
-    )
-  }
+  const { grid, createPolyanetsUI } = useCreatePolyanetsUI()
+  const { createPolyanetsAPI, isPending, error } = useCreatePolyanetsAPI()
 
   return (
-    <div className="flex flex-col gap-4">
-      <p>PhaseOne</p>
-      <p>Create Polyanets (UI)</p>
-      <p className="mt-2 text-sm text-gray-500">For testing purposes</p>
-      <Button className="mt-2 cursor-pointer" onClick={createPolyanetsUI}>
+    <div className="mb-24 flex flex-col gap-4">
+      <h1 className="text-2xl font-bold">Phase One</h1>
+      <p className="font-semibold">
+        Create Polyanets (UI){" "}
+        <span className="text-sm text-gray-500"> - For testing purposes</span>
+      </p>
+
+      <Button
+        variant="secondary"
+        className="mt-2 cursor-pointer"
+        onClick={createPolyanetsUI}
+      >
         Create
       </Button>
       <div className="grid grid-cols-11 gap-1">
@@ -63,8 +33,15 @@ const PhaseOne = () => {
           </div>
         ))}
       </div>
-      <p className="mt-6">Create Polyanets (API)</p>
-      <Button className="mt-2 cursor-pointer" onClick={createPolyanetsAPI}>
+      <p className="mt-6 font-semibold">
+        Create Polyanets (API){" "}
+        <span className="text-sm text-green-500"> - For persistence</span>
+      </p>
+      <Button
+        variant="secondary"
+        className="mt-2 cursor-pointer"
+        onClick={createPolyanetsAPI}
+      >
         Create
       </Button>
       {isPending && <p>Loading...</p>}
